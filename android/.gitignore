@@ -12,4 +12,6 @@ key.properties
 **/*.keystore
 **/*.jks
 
+# Secrets
 secret.properties
+app/google-services.json
