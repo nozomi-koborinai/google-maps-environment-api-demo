@@ -45,3 +45,4 @@ app.*.map.json
 
 # Secrets
 .env
+firebase_options.dart

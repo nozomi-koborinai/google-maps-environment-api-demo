@@ -1,40 +1,60 @@
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
-import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:google_maps_environment_api_demo/presentation/app.dart';
+import 'package:package_info/package_info.dart';
 
-void main() => runApp(const MyApp());
+import 'domain/app_info.dart';
+import 'domain/env.dart';
+import 'firebase_options.dart';
 
-class MyApp extends StatefulWidget {
-  const MyApp({Key? key}) : super(key: key);
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
 
-  @override
-  _MyAppState createState() => _MyAppState();
-}
+  // Firebase の初期化
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
 
-class _MyAppState extends State<MyApp> {
-  late GoogleMapController mapController;
+  // .env ファイルの読み込み
+  await dotenv.load();
 
-  final LatLng _center = const LatLng(45.521563, -122.677433);
+  // 画面の向きを縦に固定
+  await SystemChrome.setPreferredOrientations(
+    [DeviceOrientation.portraitUp],
+  );
 
-  void _onMapCreated(GoogleMapController controller) {
-    mapController = controller;
-  }
+  // パッケージ情報
+  final packageInfo = await PackageInfo.fromPlatform();
 
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      home: Scaffold(
-        appBar: AppBar(
-          title: const Text('Maps Sample App'),
-          backgroundColor: Colors.green[700],
-        ),
-        body: GoogleMap(
-          onMapCreated: _onMapCreated,
-          initialCameraPosition: CameraPosition(
-            target: _center,
-            zoom: 11.0,
+  // アプリケーションの実行
+  runApp(
+    ProviderScope(
+      overrides: [
+        // 環境変数を上書き
+        envProvider.overrideWithValue(
+          Env(
+            googleMapsApiKey: dotenv.get('GOOGLE_MAPS_API_KEY'),
           ),
         ),
-      ),
-    );
-  }
+
+        // アプリ情報の上書き
+        appInfoProvider.overrideWith(
+          (ref) => AppInfo(
+            appName: packageInfo.appName,
+            packageName: packageInfo.packageName,
+            version: 'v${packageInfo.version}',
+            buildNumber: packageInfo.buildNumber,
+            copyRight: '(C)2024 Cloud Ace, Inc.',
+            iconImagePath: '',
+            privacyPolicyUrl: Uri.parse(''),
+            termsOfServiceUrl: Uri.parse(''),
+          ),
+        ),
+      ],
+      child: const App(),
+    ),
+  );
 }
