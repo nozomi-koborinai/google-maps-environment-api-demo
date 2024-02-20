@@ -16,7 +16,7 @@ class _MapsViewPageState extends ConsumerState<MapsViewPage>
     with AutomaticKeepAliveClientMixin {
   late GoogleMapController mapController;
 
-  final LatLng _center = const LatLng(45.521563, -122.677433);
+  final LatLng _center = const LatLng(35.630152, 139.74044);
 
   void _onMapCreated(GoogleMapController controller) {
     mapController = controller;
@@ -25,8 +25,8 @@ class _MapsViewPageState extends ConsumerState<MapsViewPage>
   @override
   void initState() {
     ref.read(airQualityRepositoryProvider).fetch(
-          latitude: 35.630152,
-          longitude: 139.74044,
+          latitude: _center.latitude,
+          longitude: _center.longitude,
         );
     super.initState();
   }
