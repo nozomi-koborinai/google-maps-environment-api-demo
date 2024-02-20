@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:google_maps_environment_api_demo/domain/postal_code_info.dart';
+import 'dart:convert';
 
 import '../../../domain/destination.dart';
 
@@ -16,7 +17,7 @@ class DestinationDocument {
 
   final String destinationId;
   final String postalCode;
-  final PostalCodeInfo result;
+  final String result;
   final DateTime createdAt;
   final DateTime updatedAt;
 
@@ -25,14 +26,14 @@ class DestinationDocument {
       DestinationDocument(
         destinationId: destinationId,
         postalCode: json['postalCode'] as String,
-        result: PostalCodeInfo.fromJson(json['result']),
+        result: json['result'] as String,
         createdAt: (json['createdAt'] as Timestamp).toDate(),
         updatedAt: (json['updatedAt'] as Timestamp).toDate(),
       );
 
   Map<String, dynamic> toJson() => {
         'postalCode': postalCode,
-        'result': result,
+        'result': '',
         'safetyMetadata': {},
         'status': {},
         'createdAt': createdAt,
@@ -41,12 +42,16 @@ class DestinationDocument {
 }
 
 /// [DestinationDocument] の拡張
-extension on DestinationDocument {
+extension DestinationDocumentEx on DestinationDocument {
   /// [DestinationDocument] -> [Destination]
-  Destination toDestination() => Destination(
-        destinationId: destinationId,
-        postalCode: postalCode,
-        postalCodeInfo: result,
-        createdAt: createdAt,
-      );
+  Destination toDestination() {
+    final Map<String, dynamic> resultData = json.decode(result);
+    final postalCodeInfo = PostalCodeInfo.fromJson(resultData);
+    return Destination(
+      destinationId: destinationId,
+      postalCode: postalCode,
+      postalCodeInfo: postalCodeInfo,
+      createdAt: createdAt,
+    );
+  }
 }
