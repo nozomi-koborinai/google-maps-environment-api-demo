@@ -40,7 +40,7 @@ class SigninPage extends ConsumerWidget with ErrorHandlerMixin {
                     width: double.infinity,
                     child: ElevatedButton(
                       onPressed: () async {
-                        execute(
+                        run(
                           context,
                           action: () async {
                             await ref

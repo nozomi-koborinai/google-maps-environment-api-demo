@@ -5,7 +5,7 @@ import '../components/snackbars.dart';
 
 /// プレゼンテーション層用のエラーハンドリングをラップした共通処理 Mixin
 mixin ErrorHandlerMixin {
-  Future<void> execute(
+  Future<void> run(
     BuildContext context, {
     required Future<void> Function() action,
     required String successMessage,
