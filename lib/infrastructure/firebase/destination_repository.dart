@@ -44,7 +44,7 @@ class DestinationRepository {
         DestinationDocument(
           destinationId: '',
           postalCode: destination.postalCode,
-          result: '',
+          output: '',
         ),
       );
 
@@ -84,7 +84,7 @@ class DestinationRepository {
     final snapshots = destinationCollectionRef.doc(documentId).snapshots();
     const timeout = Duration(minutes: 1);
     await for (final snapshot in snapshots.timeout(timeout)) {
-      if (snapshot.data()?.result != '') {
+      if (snapshot.data()?.output != '') {
         return snapshot;
       }
     }

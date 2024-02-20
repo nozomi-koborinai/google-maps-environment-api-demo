@@ -9,7 +9,7 @@ class DestinationDocument {
   DestinationDocument({
     required this.destinationId,
     required this.postalCode,
-    required this.result,
+    required this.output,
     DateTime? createdAt,
     DateTime? updatedAt,
   })  : createdAt = createdAt ?? DateTime.now(),
@@ -17,7 +17,7 @@ class DestinationDocument {
 
   final String destinationId;
   final String postalCode;
-  final String result;
+  final String output;
   final DateTime createdAt;
   final DateTime updatedAt;
 
@@ -26,14 +26,14 @@ class DestinationDocument {
       DestinationDocument(
         destinationId: destinationId,
         postalCode: json['postalCode'] as String,
-        result: json['result'] as String,
+        output: json['output'] as String,
         createdAt: (json['createdAt'] as Timestamp).toDate(),
         updatedAt: (json['updatedAt'] as Timestamp).toDate(),
       );
 
   Map<String, dynamic> toJson() => {
         'postalCode': postalCode,
-        'result': '',
+        'output': '',
         'safetyMetadata': {},
         'status': {},
         'createdAt': createdAt,
@@ -45,7 +45,7 @@ class DestinationDocument {
 extension DestinationDocumentEx on DestinationDocument {
   /// [DestinationDocument] -> [Destination]
   Destination toDestination() {
-    final Map<String, dynamic> resultData = json.decode(result);
+    final Map<String, dynamic> resultData = json.decode(output);
     final postalCodeInfo = PostalCodeInfo.fromJson(resultData);
     return Destination(
       destinationId: destinationId,
