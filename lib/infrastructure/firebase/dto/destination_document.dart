@@ -45,7 +45,14 @@ class DestinationDocument {
 extension DestinationDocumentEx on DestinationDocument {
   /// [DestinationDocument] -> [Destination]
   Destination toDestination() {
-    final Map<String, dynamic> resultData = json.decode(output);
+    // ここから HACK: Firestore から取得した JSON 文字列を加工しないように LLM のプロンプトを修正する必要がありそう
+    String jsonString = output;
+    jsonString = jsonString.trim();
+    jsonString = jsonString.substring(7, jsonString.length - 4);
+    // ここまで
+
+    // JSON 文字列をデコードしてフロントで扱いやすくした PostalCodeInfo オブジェクトに変換
+    final Map<String, dynamic> resultData = json.decode(jsonString);
     final postalCodeInfo = PostalCodeInfo.fromJson(resultData);
     return Destination(
       destinationId: destinationId,
