@@ -8,6 +8,7 @@ import 'package:google_maps_environment_api_demo/presentation/theme.dart';
 import '../application/common/state/overlay_loading_provider.dart';
 import 'components/dialog.dart';
 import 'components/loading.dart';
+import 'components/overlay_lottie.dart';
 
 /// Google Maps Platform の Environment API を活用した Demo App
 class App extends ConsumerWidget {
@@ -32,7 +33,7 @@ class App extends ConsumerWidget {
       builder: (context, child) => Consumer(
         builder: (context, ref, _) {
           final isLoading = ref.watch(overlayLoadingProvider);
-          // final isLottie = ref.watch(overlayLottieProvider);
+          final isLottie = ref.watch(overlayLottieProvider);
           return MediaQuery(
             data: MediaQuery.of(context).copyWith(textScaleFactor: 1),
             child: Navigator(
@@ -44,7 +45,7 @@ class App extends ConsumerWidget {
                     children: [
                       child!,
                       if (isLoading) const OverlayLoading(),
-                      // if (isLottie) const OverlayLottie(),
+                      if (isLottie) const OverlayLottie(),
                     ],
                   ),
                 ),
