@@ -8,12 +8,13 @@ mixin ErrorHandlerMixin {
   Future<void> run(
     BuildContext context, {
     required Future<void> Function() action,
-    required String successMessage,
+    String successMessage = '',
   }) async {
     final scaffoldMessenger = ScaffoldMessenger.of(context);
     try {
       await action();
-      SuccessSnackBar.show(
+      if (successMessage.isEmpty) return;
+      return SuccessSnackBar.show(
         scaffoldMessenger,
         message: successMessage,
       );
