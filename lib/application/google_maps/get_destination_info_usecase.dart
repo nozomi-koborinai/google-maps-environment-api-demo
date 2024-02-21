@@ -1,8 +1,10 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_maps_environment_api_demo/domain/destination.dart';
+import 'package:google_maps_environment_api_demo/domain/google_maps/air_quality.dart';
 import 'package:google_maps_environment_api_demo/domain/postal_code_info.dart';
 import 'package:google_maps_environment_api_demo/infrastructure/firebase/destination_repository.dart';
 
+import '../../infrastructure/google_maps/air_quality_repository.dart';
 import '../common/mixin/run_usecase_mixin.dart';
 
 /// [GetDestinationInfoUsecase] のインスタンスを提供する [Provider]
@@ -21,11 +23,30 @@ class GetDestinationInfoUsecase with RunUsecaseMixin {
   /// [Ref] は必要な [Provider] を読み取るために使用される
   final Ref ref;
 
-  /// 引越し先郵便番号からその詳細情報を取得する
-  Future<Destination> execute({
+  /// 引越し先郵便番号からその詳細情報を取得し、合わせて地図情報を取得する
+  ///
+  /// LLM による取得 + Google Maps API による取得が同期的に行われる
+  Future<(Destination, AirQuality)> execute({
     required String postalCode,
   }) async {
-    final destination = Destination(
+    return await run(
+      ref,
+      () async {
+        final destination = await _getDestinationInfo(postalCode);
+        final airQuality = await _getMapInfo(
+          destination.postalCodeInfo.address.lat,
+          destination.postalCodeInfo.address.lng,
+        );
+        return (destination, airQuality);
+      },
+      isLottieAnimation: true,
+    );
+  }
+
+  /// 引越し先郵便番号からその詳細情報を取得する
+  Future<Destination> _getDestinationInfo(String postalCode) async {
+    final repository = ref.read(destinationRepositoryProvider);
+    return await repository.fetch(await repository.add(Destination(
       destinationId: '',
       postalCode: postalCode,
       postalCodeInfo: PostalCodeInfo(
@@ -41,15 +62,14 @@ class GetDestinationInfoUsecase with RunUsecaseMixin {
         disasterPrevention: DisasterPrevention(geotechnicalInfo: ''),
       ),
       createdAt: DateTime.now(),
-    );
+    )));
+  }
 
-    return await run(
-      ref,
-      () async {
-        final repository = ref.read(destinationRepositoryProvider);
-        return await repository.fetch(await repository.add(destination));
-      },
-      isLottieAnimation: false,
-    );
+  /// 座標から地図情報（大気質レベル）を取得する
+  Future<AirQuality> _getMapInfo(double latitude, double longitude) async {
+    return await ref.read(airQualityRepositoryProvider).fetch(
+          latitude: latitude,
+          longitude: longitude,
+        );
   }
 }
