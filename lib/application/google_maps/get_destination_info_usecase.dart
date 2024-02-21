@@ -3,10 +3,12 @@ import 'package:google_maps_environment_api_demo/domain/destination.dart';
 import 'package:google_maps_environment_api_demo/domain/postal_code_info.dart';
 import 'package:google_maps_environment_api_demo/infrastructure/firebase/destination_repository.dart';
 
-import 'common/mixin/run_usecase_mixin.dart';
+import '../common/mixin/run_usecase_mixin.dart';
 
 /// [GetDestinationInfoUsecase] のインスタンスを提供する [Provider]
-final getDestinationInfoUsecase = Provider<GetDestinationInfoUsecase>(
+///
+/// Presentation Layer にユースケースを注入するために使用され、引越し先の郵便番号を登録したのちに詳細を LLM によって取得する
+final getDestinationInfoUsecaseProvider = Provider<GetDestinationInfoUsecase>(
   GetDestinationInfoUsecase.new,
 );
 
@@ -14,6 +16,9 @@ final getDestinationInfoUsecase = Provider<GetDestinationInfoUsecase>(
 class GetDestinationInfoUsecase with RunUsecaseMixin {
   GetDestinationInfoUsecase(this.ref);
 
+  /// 指定された [Ref] を使用して [GetDestinationInfoUsecase] を構築する
+  ///
+  /// [Ref] は必要な [Provider] を読み取るために使用される
   final Ref ref;
 
   /// 引越し先郵便番号からその詳細情報を取得する
@@ -44,7 +49,7 @@ class GetDestinationInfoUsecase with RunUsecaseMixin {
         final repository = ref.read(destinationRepositoryProvider);
         return await repository.fetch(await repository.add(destination));
       },
-      isLottieAnimation: true,
+      isLottieAnimation: false,
     );
   }
 }

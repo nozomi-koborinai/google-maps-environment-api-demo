@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import 'app_colors.dart';
+import 'components/app_colors.dart';
 
 /// [ThemeData] を提供する [Provider]
 final themeProvider = Provider(

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../app_colors.dart';
+import 'app_colors.dart';
 
 class CommonAppBar extends StatelessWidget implements PreferredSizeWidget {
   const CommonAppBar({super.key});
