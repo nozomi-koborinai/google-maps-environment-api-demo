@@ -5,15 +5,16 @@ import '../components/snackbars.dart';
 
 /// プレゼンテーション層用のエラーハンドリングをラップした共通処理 Mixin
 mixin ErrorHandlerMixin {
-  Future<void> execute(
+  Future<void> run(
     BuildContext context, {
     required Future<void> Function() action,
-    required String successMessage,
+    String successMessage = '',
   }) async {
     final scaffoldMessenger = ScaffoldMessenger.of(context);
     try {
       await action();
-      SuccessSnackBar.show(
+      if (successMessage.isEmpty) return;
+      return SuccessSnackBar.show(
         scaffoldMessenger,
         message: successMessage,
       );

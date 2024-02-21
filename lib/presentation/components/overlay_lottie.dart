@@ -16,7 +16,7 @@ class OverlayLottie extends StatelessWidget {
       color: backgroundColor,
       child: Center(
         child: Lottie.asset(
-          'assets/lottie/hospital.json',
+          'assets/lottie/animation.json',
           repeat: true,
           reverse: false,
           animate: true,

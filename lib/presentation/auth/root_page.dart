@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:google_maps_environment_api_demo/presentation/signin_page.dart';
+import 'package:flutter_hooks/flutter_hooks.dart';
+import 'package:google_maps_environment_api_demo/application/auth/register_anonymous_user_usecase.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
-import '../infrastructure/firebase/auth_repository.dart';
-import 'google_maps/maps_view_page.dart';
+import '../../infrastructure/firebase/auth_repository.dart';
+import '../google_maps/maps_view_page.dart';
 
 final rootPageKey = Provider((ref) => GlobalKey<NavigatorState>());
 
@@ -12,13 +13,24 @@ class RootPage extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    useEffect(
+      () {
+        WidgetsBinding.instance.addPostFrameCallback((_) async {
+          await ref.read(registerAnonymousUserUsecaseProvider).execute();
+        });
+        return;
+      },
+      [],
+    );
+
     return Scaffold(
       key: ref.watch(rootPageKey),
-      body: AuthDependentBuilder(onAuthenticated: (userId) {
-        return const MapsViewPage();
-      }, onUnAuthenticated: () {
-        return const SigninPage();
-      }),
+      body: AuthDependentBuilder(
+        onAuthenticated: (userId) => const MapsViewPage(),
+        onUnAuthenticated: () => const Center(
+          child: CircularProgressIndicator(),
+        ),
+      ),
     );
   }
 }
