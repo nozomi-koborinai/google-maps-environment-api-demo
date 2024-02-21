@@ -7,11 +7,20 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_maps_environment_api_demo/domain/google_maps/air_quality.dart';
 import 'package:google_maps_environment_api_demo/presentation/mixin/error_handler_mixin.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
-// import 'package:flutter/services.dart' show rootBundle;
+import 'package:flutter/services.dart' show rootBundle;
 
 import '../../application/google_maps/get_destination_info_usecase.dart';
 import '../../domain/destination.dart';
 
+/// 現在の地図の位置情報を提供する [StateProvider]
+final _currentMapPositionProvider = StateProvider<LatLng>(
+  (_) => const LatLng(
+    35.630152,
+    139.74044,
+  ),
+);
+
+/// [MapsViewPage] のウィジェット
 class MapsViewPage extends ConsumerStatefulWidget {
   const MapsViewPage({super.key});
 
@@ -23,17 +32,25 @@ class _MapsViewPageState extends ConsumerState<MapsViewPage>
     with ErrorHandlerMixin {
   final Completer<GoogleMapController> mapController = Completer();
 
-  final LatLng _center = const LatLng(35.630152, 139.74044);
-
   @override
   Widget build(BuildContext context) {
+    ref.listen(_currentMapPositionProvider, (_, next) async {
+      final controller = await mapController.future;
+      await controller.animateCamera(
+        CameraUpdate.newLatLngZoom(
+          LatLng(next.latitude, next.longitude),
+          14.0,
+        ),
+      );
+    });
+
     return Scaffold(
       extendBodyBehindAppBar: true,
       appBar: AppBar(
         title: TextField(
           decoration: InputDecoration(
             hintText: '郵便番号で検索（例: 100-0000）',
-            fillColor: Colors.white.withOpacity(0.8), // 背景を少し透明に
+            fillColor: Colors.white.withOpacity(0.8),
             filled: true,
             contentPadding: const EdgeInsets.all(0),
             prefixIcon: const Icon(Icons.search, color: Colors.black),
@@ -50,13 +67,17 @@ class _MapsViewPageState extends ConsumerState<MapsViewPage>
                     await ref.read(getDestinationInfoUsecaseProvider).execute(
                           postalCode: value,
                         );
+                ref.read(_currentMapPositionProvider.notifier).update(
+                      (_) => LatLng(result.$1.postalCodeInfo.address.lat,
+                          result.$1.postalCodeInfo.address.lng),
+                    );
                 _showModalBottomSheet(context, result);
               },
             );
           },
         ),
         backgroundColor: Colors.transparent,
-        elevation: 0, // 影をなくす
+        elevation: 0,
       ),
       body: GoogleMap(
         minMaxZoomPreference: const MinMaxZoomPreference(0, 16),
@@ -64,14 +85,15 @@ class _MapsViewPageState extends ConsumerState<MapsViewPage>
         zoomControlsEnabled: false,
         onMapCreated: (controller) async {
           mapController.complete(controller);
-          // final value = await rootBundle.loadString(Assets.json.mapStyle);
-          // final futureController = await mapController.future;
-          // await futureController.setMapStyle(value);
+          final value =
+              await rootBundle.loadString('assets/maps/maps_style.json');
+          final futureController = await mapController.future;
+          await futureController.setMapStyle(value);
         },
         myLocationButtonEnabled: false,
         initialCameraPosition: CameraPosition(
-          target: _center,
-          zoom: 13.0,
+          target: ref.read(_currentMapPositionProvider),
+          zoom: 14.0,
         ),
       ),
     );
@@ -114,7 +136,7 @@ class _MapsViewPageState extends ConsumerState<MapsViewPage>
               ),
               ListTile(
                 leading: const Icon(Icons.policy_sharp),
-                title: Text('犯罪発生率: ${postalCodeInfo.crimeRate}件'),
+                title: Text('犯罪発生率: ${postalCodeInfo.crimeRate}'),
               ),
               ListTile(
                 leading: const Icon(Icons.family_restroom),
